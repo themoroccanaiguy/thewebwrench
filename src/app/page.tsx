@@ -7,6 +7,7 @@ import { Input } from "@/components/input"
 import { Badge } from "@/components/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/accordion"
 import { useState } from "react"
+import AuroraBackground from "@/components/ui/aurora-background"
 
 function LeadMagnetSurvey() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -260,9 +261,9 @@ function LeadMagnetSurvey() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-brand-light-gray">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+      <header className="absolute top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2 md:flex-1">
             <img
@@ -275,52 +276,23 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center space-x-8">
             <a
               href="#services"
-              className="typography-body mb-0 text-brand-charcoal hover:text-brand-orange transition-colors font-medium"
+              className="typography-body mb-0 text-white hover:text-brand-orange transition-colors font-medium"
             >
               Services
             </a>
             <a
               href="#how-it-works"
-              className="typography-body mb-0 text-brand-charcoal hover:text-brand-orange transition-colors font-medium"
+              className="typography-body mb-0 text-white hover:text-brand-orange transition-colors font-medium"
             >
               How It Works
             </a>
-            <Button className="bg-brand-navy hover:bg-brand-navy-light text-white">Get Started</Button>
+            <Button className="bg-brand-orange hover:bg-brand-orange-dark text-white">Get Started</Button>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-brand-light-gray to-white py-20 relative overflow-hidden">
-        {/* Decorative Circles */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Large circles */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-brand-orange/10 rounded-full"></div>
-          <div className="absolute top-20 right-20 w-24 h-24 bg-brand-navy/10 rounded-full"></div>
-          <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-brand-orange/5 rounded-full"></div>
-          <div className="absolute bottom-20 right-1/3 w-28 h-28 bg-brand-navy/8 rounded-full"></div>
-
-          {/* Medium circles */}
-          <div className="absolute top-1/3 left-1/3 w-16 h-16 bg-brand-orange/8 rounded-full"></div>
-          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-brand-navy/6 rounded-full"></div>
-          <div className="absolute bottom-1/2 left-1/2 w-12 h-12 bg-brand-orange/12 rounded-full"></div>
-          <div className="absolute top-3/4 right-1/2 w-18 h-18 bg-brand-navy/10 rounded-full"></div>
-
-          {/* Small circles */}
-          <div className="absolute top-16 left-1/2 w-8 h-8 bg-brand-orange/15 rounded-full"></div>
-          <div className="absolute top-1/4 right-16 w-6 h-6 bg-brand-navy/12 rounded-full"></div>
-          <div className="absolute bottom-1/4 left-16 w-10 h-10 bg-brand-orange/10 rounded-full"></div>
-          <div className="absolute bottom-16 right-1/4 w-7 h-7 bg-brand-navy/8 rounded-full"></div>
-          <div className="absolute top-2/3 left-1/5 w-9 h-9 bg-brand-orange/12 rounded-full"></div>
-          <div className="absolute bottom-1/3 right-1/5 w-5 h-5 bg-brand-navy/15 rounded-full"></div>
-
-          {/* Extra small accent circles */}
-          <div className="absolute top-1/5 left-3/4 w-4 h-4 bg-brand-orange/18 rounded-full"></div>
-          <div className="absolute top-3/5 right-3/4 w-3 h-3 bg-brand-navy/20 rounded-full"></div>
-          <div className="absolute bottom-1/5 left-2/3 w-4 h-4 bg-brand-orange/8 rounded-full"></div>
-          <div className="absolute bottom-2/5 right-2/3 w-3 h-3 bg-brand-navy/12 rounded-full"></div>
-        </div>
-
+      <AuroraBackground>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <Badge
@@ -330,12 +302,15 @@ export default function LandingPage() {
               For Contractors, Remodelers, and Home Service Pros Who Want More Leads
             </Badge>
 
-            <h1 className="typography-display text-balance mb-6">
-              Stop Losing Leads — Get Found Online With{" "}
-              <span className="text-[rgba(10,46,92,1)]">Proven Digital Marketing</span>
-            </h1>
+            <div className="text-[70.4px] leading-[1.3] tracking-tight mb-6 font-black">
+              <div className="text-white mb-3 font-[900]">Stop Losing Leads —</div>
+              <div className="text-white mb-3 font-[900]">Get Found Online With</div>
+              <div className="bg-gradient-to-r from-brand-orange to-brand-orange-dark bg-clip-text text-transparent font-[900]">
+                Proven Digital Marketing
+              </div>
+            </div>
 
-            <p className="typography-body-large text-gray-600 max-w-3xl mx-auto mb-8">
+            <p className="typography-body-large text-white/90 max-w-3xl mx-auto mb-8">
               We create high-converting websites, run targeted ads, and automate follow-ups so you can focus on doing
               the work — not chasing clients.
             </p>
@@ -377,7 +352,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </AuroraBackground>
 
       {/* Problem Section */}
       <section className="py-20 bg-white">

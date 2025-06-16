@@ -16,7 +16,7 @@ const config: Config = {
       },
       fontSize: {
         // Custom typography scale
-        display: ["64px", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
+        display: ["70.4px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "800" }],
         h1: ["48px", { lineHeight: "1.2", letterSpacing: "-0.01em" }],
         h2: ["36px", { lineHeight: "1.25", letterSpacing: "-0.01em" }],
         h3: ["28px", { lineHeight: "1.3" }],
