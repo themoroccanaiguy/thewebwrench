@@ -31,7 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} ${lora.variable} font-body`}>{children}</body>
+      <body className={`${montserrat.variable} ${lora.variable} font-body min-h-screen`}>
+        <div className="min-h-screen">
+          {children}
+        </div>
+      </body>
     </html>
   )
 }

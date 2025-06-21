@@ -1,8 +1,9 @@
 "use client"
 
-import { ArrowRight, CheckCircle, Star, Phone, Mail, Target, Globe, Bot, BarChart3, Users, Clock } from "lucide-react"
+import { ArrowRight, CheckCircle, Star, Phone, Mail, Target, Globe, Bot, BarChart3, Users, Clock, Calendar, FileText, TrendingUp, Car, DollarSign, Rocket, ShieldCheck, BarChart2 } from "lucide-react"
 import { Button } from "@/components/button"
 import { Card, CardContent } from "@/components/card"
+import MarketingTruthSection from "@/components/sections/MarketingTruthSection"
 import { Input } from "@/components/input"
 import { Badge } from "@/components/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/accordion"
@@ -19,6 +20,7 @@ function LeadMagnetSurvey() {
     leadSources: [],
     name: "",
     email: "",
+    phone: "",
   })
 
   const questions = [
@@ -102,6 +104,13 @@ function LeadMagnetSurvey() {
     // Here you would typically send the data to your backend
     console.log("Survey completed:", answers)
     setCurrentStep(questions.length + 1) // Show thank you message
+    
+    // You can add your form submission logic here, e.g.,
+    // await fetch('/api/submit-lead', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(answers)
+    // });
   }
 
   const progress = ((currentStep + 1) / (questions.length + 2)) * 100
@@ -111,11 +120,32 @@ function LeadMagnetSurvey() {
       <div className="text-center">
         <div className="bg-white rounded-lg p-8 text-brand-charcoal max-w-2xl mx-auto">
           <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
-          <h3 className="typography-h3">Thank You!</h3>
-          <p className="typography-body-large">
-            Your personalized 7-Day Digital Marketing Jumpstart Guide is being prepared based on your responses.
+          <h3 className="text-2xl font-bold mb-4">Thank You, {answers.name}!</h3>
+          <p className="text-lg mb-6">
+            Thank you for completing the survey! We're reviewing your responses to better understand your business needs.
           </p>
-          <p className="typography-body">Check your email in the next few minutes for your customized action plan!</p>
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8 text-left">
+            <p className="font-medium text-blue-700">What's Next:</p>
+            <p className="text-blue-700">
+              You'll receive a confirmation email with details about your free online presence audit call. 
+              During this 15-minute consultation, we'll review your current digital presence and provide 
+              actionable strategies to help you attract more customers.
+            </p>
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h4 className="text-xl font-semibold mb-4">Schedule a Free 15-Minute Consultation</h4>
+            <p className="text-gray-600 mb-6">Let's discuss how we can help grow your business!</p>
+            <a
+              href="https://calendly.com/more-estimates/let-s-discuss-how-we-can-help-grow-your-business"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-orange hover:bg-brand-orange-dark transition-colors"
+            >
+              <Calendar className="mr-2 h-5 w-5" />
+              Book Your Free Consultation
+            </a>
+          </div>
         </div>
       </div>
     )
@@ -124,9 +154,26 @@ function LeadMagnetSurvey() {
   return (
     <div className="text-center">
       <div className="mb-8">
-        <h2 className="typography-h2 text-white mb-4">Get Your Personalized Lead Generation Strategy</h2>
-        <p className="typography-body-large text-white/90">
-          Answer a few quick questions to get a customized 7-day action plan for your business
+        <h2 className="text-3xl font-bold text-white mb-4">Claim Your Free Online Presence Audit</h2>
+        <p className="text-lg text-white/90 mb-6">
+          Complete this quick survey to schedule a free 15-minute consultation where we'll:
+        </p>
+        <ul className="max-w-2xl mx-auto text-left space-y-2 mb-6 text-white/90 bg-white/10 p-6 rounded-lg">
+          <li className="flex items-start">
+            <CheckCircle className="h-5 w-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+            <span>Audit your current online presence and digital marketing</span>
+          </li>
+          <li className="flex items-start">
+            <CheckCircle className="h-5 w-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+            <span>Identify key opportunities to attract more local customers</span>
+          </li>
+          <li className="flex items-start">
+            <CheckCircle className="h-5 w-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+            <span>Provide a personalized strategy to generate more leads</span>
+          </li>
+        </ul>
+        <p className="text-lg font-medium text-white">
+          No obligation. No pushy sales. Just expert advice to help grow your business.
         </p>
       </div>
 
@@ -138,7 +185,7 @@ function LeadMagnetSurvey() {
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        <p className="typography-caption text-white/75 mt-2">
+        <p className="text-sm text-white/75 mt-2">
           Step {currentStep + 1} of {questions.length + 1}
         </p>
       </div>
@@ -146,7 +193,7 @@ function LeadMagnetSurvey() {
       <div className="bg-white rounded-lg p-8 text-brand-charcoal max-w-2xl mx-auto">
         {currentStep < questions.length ? (
           <div>
-            <h3 className="typography-h3 text-left mb-8">{questions[currentStep].title}</h3>
+            <h3 className="text-2xl font-bold text-left mb-8">{questions[currentStep].title}</h3>
 
             <div className="space-y-3">
               {questions[currentStep].options.map((option, index) => (
@@ -181,7 +228,7 @@ function LeadMagnetSurvey() {
                     }}
                     className="mr-3 text-brand-navy focus:ring-brand-navy"
                   />
-                  <span className="text-left flex-1 typography-body mb-0">{option}</span>
+                  <span className="text-left flex-1 text-base mb-0">{option}</span>
                 </label>
               ))}
             </div>
@@ -211,20 +258,28 @@ function LeadMagnetSurvey() {
           </div>
         ) : (
           <div>
-            <h3 className="typography-h3 mb-6">Almost done! Where should we send your personalized strategy?</h3>
+            <h3 className="text-2xl font-bold text-left mb-8">Almost done! Where should we send your personalized strategy?</h3>
 
             <div className="space-y-4 max-w-md mx-auto">
               <Input
                 placeholder="Your Name"
                 value={answers.name}
-                onChange={(e) => handleAnswer("name", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("name", e.target.value)}
                 className="text-center focus:ring-brand-navy focus:border-brand-navy"
               />
               <Input
                 placeholder="Your Email"
                 type="email"
                 value={answers.email}
-                onChange={(e) => handleAnswer("email", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("email", e.target.value)}
+                className="text-center focus:ring-brand-navy focus:border-brand-navy"
+              />
+              
+              <Input
+                placeholder="Your Phone Number (Optional)"
+                type="tel"
+                value={answers.phone}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("phone", e.target.value)}
                 className="text-center focus:ring-brand-navy focus:border-brand-navy"
               />
 
@@ -234,12 +289,12 @@ function LeadMagnetSurvey() {
                 className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white"
                 size="lg"
               >
-                Get My Personalized Strategy
+                Schedule My Free Audit Call
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
 
-            <p className="typography-body-small text-gray-600 mt-4">
+            <p className="text-base text-gray-600 mt-4">
               No spam. Your information is safe and will only be used to send you valuable marketing insights.
             </p>
 
@@ -261,9 +316,9 @@ function LeadMagnetSurvey() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-brand-light-gray">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2 md:flex-1">
             <img
@@ -286,7 +341,14 @@ export default function LandingPage() {
             >
               How It Works
             </a>
-            <Button className="bg-brand-navy hover:bg-brand-navy-light text-white">Get Started</Button>
+            <Button 
+              className="bg-brand-navy hover:bg-brand-navy-light text-white"
+              onClick={() => {
+                document.getElementById('lead-survey')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
+              Get Started
+            </Button>
           </nav>
         </div>
       </header>
@@ -303,50 +365,64 @@ export default function LandingPage() {
             </Badge>
 
             <div className="text-[70.4px] leading-[1.3] tracking-tight mb-6 font-black">
-              <div className="text-white mb-3 font-[900]">Stop Losing Leads —</div>
-              <div className="text-white mb-3 font-[900]">Get Found Online With</div>
-              <div className="bg-gradient-to-r from-brand-orange to-brand-orange-dark bg-clip-text text-transparent font-[900]">
+              <div className="text-black mb-3 font-[900]">Stop Losing Leads</div>
+              <div className="text-black mb-3 font-[900]">Get Found Online With</div>
+              <div className="text-brand-orange font-[900]">
                 Proven Digital Marketing
               </div>
             </div>
 
-            <p className="typography-body-large text-white/90 max-w-3xl mx-auto mb-8">
-              We create high-converting websites, run targeted ads, and automate follow-ups so you can focus on doing
-              the work — not chasing clients.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button
                 size="lg"
                 className="bg-brand-orange hover:bg-brand-orange-dark text-white text-lg px-8 py-4 shadow-lg"
+                onClick={() => {
+                  document.getElementById('lead-survey')?.scrollIntoView({ behavior: 'smooth' })
+                }}
               >
                 Get My Free Lead Strategy
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
 
-            {/* Hero Visual */}
-            <div className="relative max-w-4xl mx-auto">
-              <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-2xl p-8 border">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Card className="border-green-200 bg-green-50">
-                    <CardContent className="p-6 text-center">
-                      <div className="typography-h3 text-green-600 mb-2">247</div>
-                      <div className="typography-body-small text-green-700 mb-0">New Leads This Month</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-brand-navy/20 bg-brand-navy/5">
-                    <CardContent className="p-6 text-center">
-                      <div className="typography-h3 text-brand-navy mb-2">89%</div>
-                      <div className="typography-body-small text-brand-navy/80 mb-0">Conversion Rate</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-brand-orange/20 bg-brand-orange/5">
-                    <CardContent className="p-6 text-center">
-                      <div className="typography-h3 text-brand-orange mb-2">$127K</div>
-                      <div className="typography-body-small text-brand-orange/80 mb-0">Revenue Generated</div>
-                    </CardContent>
-                  </Card>
+            {/* Three-Step Process */}
+            <div className="relative max-w-5xl mx-auto mt-6 pb-8 px-2">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start pt-6 relative z-10">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center text-center relative">
+                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
+                    <Calendar className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-black mb-1">Book Your Free Call</h3>
+                </div>
+                {/* Step 2 */}
+                <div className="flex flex-col items-center text-center relative">
+                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
+                    <Car className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-black mb-1">Get Custom Strategy</h3>
+                </div>
+                {/* Step 3 */}
+                <div className="flex flex-col items-center text-center relative">
+                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
+                    <DollarSign className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-black mb-1">Watch Leads Flow In</h3>
+                </div>
+              </div>
+              {/* Arrows between steps - positioned absolutely between columns */}
+              <div className="hidden lg:block absolute inset-0 w-full h-full pointer-events-none">
+                {/* First arrow - between step 1 and 2 */}
+                <div className="absolute left-1/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                  <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                {/* Second arrow - between step 2 and 3 */}
+                <div className="absolute left-2/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                  <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -354,29 +430,11 @@ export default function LandingPage() {
         </div>
       </HomeImprovementHero>
 
-      {/* Problem Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center prose">
-            <h2 className="typography-h2">Most Home Improvement Pros Don't Know This…</h2>
-            <div className="space-y-6">
-              <p className="typography-body-large">
-                You're busy building kitchens, fixing roofs, and managing crews — not learning SEO, Facebook Ads, or
-                chatbots.
-              </p>
-              <p className="typography-body-large font-semibold text-brand-charcoal">
-                But here's the truth: If people can't find you online, they'll call someone else.
-              </p>
-              <p className="typography-body">
-                That's where we come in. We handle the marketing while you handle the job.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Marketing Truth Section */}
+      <MarketingTruthSection />
 
       {/* Services Section */}
-      <section id="services" className="py-20 bg-brand-light-gray">
+      <section id="services" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="typography-h2">Services We Offer</h2>
@@ -419,52 +477,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="typography-h2">How It Works</h2>
-            <p className="typography-body-large text-gray-600">Simple process, powerful results</p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-brand-navy text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                1
-              </div>
-              <h3 className="typography-h5">Discovery Call</h3>
-              <p className="typography-body mb-0">Understand your goals, audience, and current challenges</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-brand-navy text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="typography-h5">Strategy Build</h3>
-              <p className="typography-body mb-0">Create your custom plan for ads, SEO, and website improvements</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-brand-navy text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                3
-              </div>
-              <h3 className="typography-h5">Launch Campaigns</h3>
-              <p className="typography-body mb-0">Go live with ads, retargeting, and website updates</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-brand-navy text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                4
-              </div>
-              <h3 className="typography-h5">Optimize & Grow</h3>
-              <p className="typography-body mb-0">Weekly/monthly check-ins to improve ROI and scale success</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Lead Magnet Survey */}
-      <section className="py-20 bg-brand-navy text-white">
+      <section id="lead-survey" className="py-20 bg-brand-navy text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <LeadMagnetSurvey />
@@ -550,7 +564,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQs */}
-      <section className="py-20 bg-brand-light-gray">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
@@ -606,8 +620,8 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-brand-charcoal text-white">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-brand-charcoal text-white relative overflow-hidden">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="typography-h1 text-white mb-6">Ready to Start Getting More Leads? Let's Talk.</h2>
             <p className="typography-body-large text-white/90 mb-8">
@@ -635,39 +649,23 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+        
+        {/* Decorative circles */}
+        <div className="absolute top-3/4 right-1/2 w-12 h-12 bg-brand-orange/8 rounded-full"></div>
+        <div className="absolute top-12 left-1/2 w-6 h-6 bg-brand-navy/12 rounded-full"></div>
+        <div className="absolute top-1/4 right-12 w-5 h-5 bg-brand-orange/10 rounded-full"></div>
+        <div className="absolute bottom-1/4 left-12 w-8 h-8 bg-brand-navy/8 rounded-full"></div>
+        <div className="absolute bottom-8 right-1/4 w-5 h-5 bg-brand-orange/12 rounded-full"></div>
+        <div className="absolute top-2/3 left-1/5 w-7 h-7 bg-brand-navy/10 rounded-full"></div>
+        <div className="absolute bottom-1/3 right-1/5 w-4 h-4 bg-brand-orange/15 rounded-full"></div>
+        <div className="absolute top-1/5 left-3/4 w-3 h-3 bg-brand-navy/15 rounded-full"></div>
+        <div className="absolute top-3/5 right-3/4 w-3 h-3 bg-brand-orange/12 rounded-full"></div>
+        <div className="absolute bottom-1/5 left-2/3 w-4 h-4 bg-brand-navy/8 rounded-full"></div>
+        <div className="absolute bottom-2/5 right-2/3 w-2 h-2 bg-brand-orange/18 rounded-full"></div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white text-brand-charcoal py-12 relative overflow-hidden border-t border-brand-navy/10">
-        {/* Decorative Circles */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Large circles */}
-          <div className="absolute top-8 left-8 w-24 h-24 bg-brand-navy/5 rounded-full"></div>
-          <div className="absolute top-16 right-16 w-20 h-20 bg-brand-orange/8 rounded-full"></div>
-          <div className="absolute bottom-20 left-1/4 w-28 h-28 bg-brand-navy/6 rounded-full"></div>
-          <div className="absolute bottom-12 right-1/3 w-22 h-22 bg-brand-orange/10 rounded-full"></div>
-
-          {/* Medium circles */}
-          <div className="absolute top-1/3 left-1/3 w-14 h-14 bg-brand-navy/8 rounded-full"></div>
-          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-brand-orange/6 rounded-full"></div>
-          <div className="absolute bottom-1/2 left-1/2 w-10 h-10 bg-brand-navy/10 rounded-full"></div>
-          <div className="absolute top-3/4 right-1/2 w-12 h-12 bg-brand-orange/8 rounded-full"></div>
-
-          {/* Small circles */}
-          <div className="absolute top-12 left-1/2 w-6 h-6 bg-brand-navy/12 rounded-full"></div>
-          <div className="absolute top-1/4 right-12 w-5 h-5 bg-brand-orange/10 rounded-full"></div>
-          <div className="absolute bottom-1/4 left-12 w-8 h-8 bg-brand-navy/8 rounded-full"></div>
-          <div className="absolute bottom-8 right-1/4 w-5 h-5 bg-brand-orange/12 rounded-full"></div>
-          <div className="absolute top-2/3 left-1/5 w-7 h-7 bg-brand-navy/10 rounded-full"></div>
-          <div className="absolute bottom-1/3 right-1/5 w-4 h-4 bg-brand-orange/15 rounded-full"></div>
-
-          {/* Extra small accent circles */}
-          <div className="absolute top-1/5 left-3/4 w-3 h-3 bg-brand-navy/15 rounded-full"></div>
-          <div className="absolute top-3/5 right-3/4 w-3 h-3 bg-brand-orange/12 rounded-full"></div>
-          <div className="absolute bottom-1/5 left-2/3 w-4 h-4 bg-brand-navy/8 rounded-full"></div>
-          <div className="absolute bottom-2/5 right-2/3 w-2 h-2 bg-brand-orange/18 rounded-full"></div>
-        </div>
-
+      <footer className="text-brand-charcoal py-12 relative overflow-hidden border-t border-gray-100">
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid md:grid-cols-4 gap-8">
             <div>

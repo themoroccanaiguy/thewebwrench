@@ -1,7 +1,11 @@
+/* stylelint-disable */
+/* This file uses Tailwind CSS directives which are valid but may show as errors in some editors */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable */
 
+/* stylelint-disable at-rule-no-unknown */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -49,31 +53,92 @@
   }
 
   * {
+    /* stylelint-disable-next-line */
     @apply border-gray-200 dark:border-gray-800;
   }
   
   body {
-    @apply bg-background text-foreground;
+    /* stylelint-disable-next-line */
+    @apply text-foreground;
+    background: linear-gradient(135deg, #ffffff 0%, #fef7f0 100%);
+    min-height: 100vh;
   }
 }
 
 @layer components {
   .typography-h1 {
+    /* stylelint-disable-next-line */
     @apply text-4xl font-bold mb-6;
   }
   .typography-h2 {
+    /* stylelint-disable-next-line */
     @apply text-3xl font-bold mb-5;
   }
   .typography-h3 {
+    /* stylelint-disable-next-line */
     @apply text-2xl font-semibold mb-4;
   }
   .typography-body {
+    /* stylelint-disable-next-line */
     @apply text-base mb-4;
   }
   .typography-body-large {
+    /* stylelint-disable-next-line */
     @apply text-lg mb-4;
   }
   .typography-caption {
+    /* stylelint-disable-next-line */
     @apply text-sm text-muted-foreground;
   }
-} 
+
+  /* MarketingTruthSection Custom Styles */
+  .marketing-gradient-text {
+    /* stylelint-disable-next-line */
+    @apply bg-gradient-to-r from-white to-gray-200 text-transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .marketing-badge {
+    /* stylelint-disable-next-line */
+    @apply inline-flex items-center gap-2 bg-white/15 border border-white/20 px-6 py-3 rounded-full text-sm font-medium mb-8;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .marketing-truth-reveal {
+    /* stylelint-disable-next-line */
+    @apply relative my-10 p-8 bg-white/10 border border-white/20 rounded-2xl text-yellow-100 text-xl md:text-2xl font-semibold max-w-3xl mx-auto overflow-hidden;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .marketing-truth-reveal::after {
+    content: '';
+    /* stylelint-disable-next-line */
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full;
+    animation: shimmer 3s infinite;
+    will-change: transform;
+  }
+
+  @keyframes float {
+    0%, 100% { 
+      transform: translateY(0);
+    }
+    50% { 
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%) skewX(-30deg);
+    }
+  }
+
+  /* Performance optimizations */
+  .marketing-feature-card {
+    will-change: transform;
+  }
+}
