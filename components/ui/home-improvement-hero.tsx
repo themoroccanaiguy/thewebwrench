@@ -13,15 +13,24 @@ export function HomeImprovementHero({
   ...props
 }: HomeImprovementHeroProps) {
   return (
-    <div
+    <section
       className={cn(
-        "relative flex flex-col flex-1 items-center justify-center min-h-[80vh] overflow-hidden py-12",
+        "relative flex flex-col items-center justify-center w-full overflow-hidden",
+        "min-h-[90vh] sm:min-h-[85vh] md:min-h-[80vh] py-16 md:py-20",
+        "bg-gradient-to-b from-white to-gray-50",
         className
       )}
       {...props}
     >
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-orange/5 to-transparent opacity-20" />
+      </div>
+      
       {/* Content container */}
-      <div className="relative z-10 w-full">{children}</div>
-    </div>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {children}
+      </div>
+    </section>
   );
 } 

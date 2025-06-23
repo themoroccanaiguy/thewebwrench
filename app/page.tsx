@@ -7,8 +7,10 @@ import MarketingTruthSection from "@/components/sections/MarketingTruthSection"
 import { Input } from "@/components/input"
 import { Badge } from "@/components/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/accordion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { HomeImprovementHero } from "@/components/ui/home-improvement-hero"
+import { supabaseClient } from "@/lib/services"
+import { Spinner } from "@/components/ui/Spinner"
 
 function LeadMagnetSurvey() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -22,6 +24,12 @@ function LeadMagnetSurvey() {
     email: "",
     phone: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [supabaseStatus, setSupabaseStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [touched, setTouched] = useState<{ [k: string]: boolean }>({})
+  const [fieldErrors, setFieldErrors] = useState<{ [k: string]: string }>({})
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false)
 
   const questions = [
     {
@@ -100,20 +108,106 @@ function LeadMagnetSurvey() {
     }
   }
 
-  const handleContactSubmit = () => {
-    // Here you would typically send the data to your backend
-    console.log("Survey completed:", answers)
-    setCurrentStep(questions.length + 1) // Show thank you message
-    
-    // You can add your form submission logic here, e.g.,
-    // await fetch('/api/submit-lead', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(answers)
-    // });
-  }
+  // Auto-save draft state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('surveyDraft', JSON.stringify(answers))
+    }
+  }, [answers])
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const draft = window.localStorage.getItem('surveyDraft')
+      if (draft) {
+        try {
+          setAnswers(JSON.parse(draft))
+        } catch {}
+      }
+    }
+  }, [])
+
+  // Analytics tracking (example: log to console, replace with real analytics)
+  useEffect(() => {
+    if (currentStep === questions.length + 1) {
+      // Replace with analytics event (e.g., window.gtag, plausible, etc.)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('survey_submitted', { detail: answers }))
+      }
+    }
+  }, [currentStep])
+
+  const handleContactSubmit = async () => {
+    if (!answers.name || !answers.email || !answers.phone) {
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    setSupabaseStatus('idle');
+
+    const formData = {
+      name: answers.name,
+      email: answers.email,
+      phone: answers.phone,
+    };
+
+    const supabaseResult = await supabaseClient.from('leads').insert([formData]);
+    if (supabaseResult.error) {
+      setSupabaseStatus('error');
+      setError('There was a problem submitting your information. Please try again.');
+    } else {
+      setSupabaseStatus('success');
+      setShowSuccessAnim(true)
+      setTimeout(() => {
+        setShowSuccessAnim(false)
+        setCurrentStep(questions.length + 1); // Show thank you
+        setAnswers({
+          businessType: "",
+          currentLeads: "",
+          biggestChallenge: "",
+          monthlyRevenue: "",
+          leadSources: [],
+          name: "",
+          email: "",
+          phone: "",
+        })
+        setTouched({})
+        setFieldErrors({})
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem('surveyDraft')
+        }
+      }, 1200)
+    }
+    setIsLoading(false);
+  };
 
   const progress = ((currentStep + 1) / (questions.length + 2)) * 100
+
+  // Validation functions
+  const validateName = (name: string) => {
+    if (!name.trim()) return 'Name is required.'
+    if (name.trim().length < 2) return 'Name must be at least 2 characters.'
+    return ''
+  }
+  const validateEmail = (email: string) => {
+    if (!email.trim()) return 'Email is required.'
+    // Simple email regex
+    if (!/^\S+@\S+\.\S+$/.test(email)) return 'Enter a valid email address.'
+    return ''
+  }
+  const validatePhone = (phone: string) => {
+    if (!phone.trim()) return 'Phone number is required.'
+    // Accepts 10+ digits, allows spaces, dashes, parentheses
+    if (!/^[\d\s\-()+]{10,}$/.test(phone)) return 'Enter a valid phone number.'
+    return ''
+  }
+
+  // Real-time validation effect
+  useEffect(() => {
+    setFieldErrors({
+      name: touched.name ? validateName(answers.name) : '',
+      email: touched.email ? validateEmail(answers.email) : '',
+      phone: touched.phone ? validatePhone(answers.phone) : '',
+    })
+  }, [answers, touched])
 
   if (currentStep === questions.length + 1) {
     return (
@@ -181,7 +275,7 @@ function LeadMagnetSurvey() {
       <div className="mb-8">
         <div className="bg-white/20 rounded-full h-2 max-w-md mx-auto">
           <div
-            className="bg-white rounded-full h-2 transition-all duration-300"
+            className="bg-brand-orange rounded-full h-2 transition-all duration-300"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -265,33 +359,75 @@ function LeadMagnetSurvey() {
                 placeholder="Your Name"
                 value={answers.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("name", e.target.value)}
-                className="text-center focus:ring-brand-navy focus:border-brand-navy"
+                onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                className={`text-center focus:ring-brand-navy focus:border-brand-navy ${touched.name && fieldErrors.name ? 'border-red-500' : touched.name && !fieldErrors.name ? 'border-green-500' : ''}`}
+                aria-invalid={!!fieldErrors.name}
+                aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                required
+                minLength={2}
+                autoComplete="name"
               />
+              {touched.name && fieldErrors.name && (
+                <div id="name-error" className="text-red-600 text-xs mt-1 text-left">{fieldErrors.name}</div>
+              )}
               <Input
                 placeholder="Your Email"
                 type="email"
                 value={answers.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("email", e.target.value)}
-                className="text-center focus:ring-brand-navy focus:border-brand-navy"
+                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                className={`text-center focus:ring-brand-navy focus:border-brand-navy ${touched.email && fieldErrors.email ? 'border-red-500' : touched.email && !fieldErrors.email ? 'border-green-500' : ''}`}
+                aria-invalid={!!fieldErrors.email}
+                aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                required
+                autoComplete="email"
               />
-              
+              {touched.email && fieldErrors.email && (
+                <div id="email-error" className="text-red-600 text-xs mt-1 text-left">{fieldErrors.email}</div>
+              )}
               <Input
-                placeholder="Your Phone Number (Optional)"
+                placeholder="Your Phone Number (Required)"
                 type="tel"
                 value={answers.phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAnswer("phone", e.target.value)}
-                className="text-center focus:ring-brand-navy focus:border-brand-navy"
+                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                className={`text-center focus:ring-brand-navy focus:border-brand-navy ${touched.phone && fieldErrors.phone ? 'border-red-500' : touched.phone && !fieldErrors.phone ? 'border-green-500' : ''}`}
+                aria-invalid={!!fieldErrors.phone}
+                aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
+                required
+                autoComplete="tel"
               />
-
+              {touched.phone && fieldErrors.phone && (
+                <div id="phone-error" className="text-red-600 text-xs mt-1 text-left">{fieldErrors.phone}</div>
+              )}
               <Button
                 onClick={handleContactSubmit}
-                disabled={!answers.name || !answers.email}
-                className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white"
+                disabled={
+                  !answers.name || !answers.email || !answers.phone ||
+                  !!fieldErrors.name || !!fieldErrors.email || !!fieldErrors.phone ||
+                  isLoading
+                }
+                className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white flex items-center justify-center"
                 size="lg"
+                aria-disabled={
+                  !answers.name || !answers.email || !answers.phone ||
+                  !!fieldErrors.name || !!fieldErrors.email || !!fieldErrors.phone ||
+                  isLoading
+                }
               >
-                Schedule My Free Audit Call
+                {isLoading ? <Spinner className="mr-2" /> : null}
+                {isLoading ? 'Submitting...' : 'Schedule My Free Audit Call'}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
+              {showSuccessAnim && (
+                <div className="flex flex-col items-center mt-4 animate-fade-in">
+                  <CheckCircle className="h-12 w-12 text-green-500 mb-2 animate-bounce" />
+                  <span className="text-green-700 font-semibold">Submission successful!</span>
+                </div>
+              )}
+              {error && (
+                <div className="text-red-600 text-sm mt-2">{error}</div>
+              )}
             </div>
 
             <p className="text-base text-gray-600 mt-4">
@@ -317,65 +453,37 @@ function LeadMagnetSurvey() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2 md:flex-1">
-            <img
-              src="/the-web-wrench-logo.webp"
-              alt="The Web Wrench"
-              style={{ height: "92px" }}
-              className="w-auto mx-auto md:mx-0"
-            />
-          </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <a
-              href="#services"
-              className="typography-body mb-0 text-brand-charcoal hover:text-brand-orange transition-colors font-medium"
-            >
-              Services
-            </a>
-            <a
-              href="#how-it-works"
-              className="typography-body mb-0 text-brand-charcoal hover:text-brand-orange transition-colors font-medium"
-            >
-              How It Works
-            </a>
-            <Button 
-              className="bg-brand-navy hover:bg-brand-navy-light text-white"
-              onClick={() => {
-                document.getElementById('lead-survey')?.scrollIntoView({ behavior: 'smooth' })
-              }}
-            >
-              Get Started
-            </Button>
-          </nav>
-        </div>
-      </header>
 
       {/* Hero Section */}
       <HomeImprovementHero>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Updated Badge */}
             <Badge
               variant="outline"
-              className="mb-6 text-brand-orange border-brand-orange bg-white/80 backdrop-blur-sm typography-body-small"
+              className="mb-4 sm:mb-6 text-brand-orange border-brand-orange/30 bg-white/90 backdrop-blur-sm text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm"
             >
-              For Contractors, Remodelers, and Home Service Pros Who Want More Leads
+              For Contractors, Remodelers & Home Service Pros
             </Badge>
 
-            <div className="text-[70.4px] leading-[1.3] tracking-tight mb-6 font-black">
-              <div className="text-black mb-3 font-[900]">Stop Losing Leads</div>
-              <div className="text-black mb-3 font-[900]">Get Found Online With</div>
-              <div className="text-brand-orange font-[900]">
-                Proven Digital Marketing
-              </div>
-            </div>
+            {/* Main Title */}
+            <h1 className="font-extrabold text-balance leading-tight tracking-tight mb-4 sm:mb-6">
+              <span className="bg-gradient-to-b from-gray-900 to-gray-700 bg-clip-text text-transparent text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl">
+                Stop Losing Leads.<br className="hidden sm:block" />
+                <span className="text-brand-orange">Get Found Online.</span>
+              </span>
+            </h1>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            {/* Subtitle */}
+            <p className="text-gray-600 text-base sm:text-lg md:text-xl lg:text-xl max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+              Transform your business with proven digital marketing strategies that actually work for contractors and home service professionals.
+            </p>
+
+            {/* CTA Button */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 md:mb-16">
               <Button
                 size="lg"
-                className="bg-brand-orange hover:bg-brand-orange-dark text-white text-lg px-8 py-4 shadow-lg"
+                className="bg-brand-orange hover:bg-brand-orange-dark text-white text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl transform-gpu"
                 onClick={() => {
                   document.getElementById('lead-survey')?.scrollIntoView({ behavior: 'smooth' })
                 }}
@@ -386,43 +494,96 @@ export default function LandingPage() {
             </div>
 
             {/* Three-Step Process */}
-            <div className="relative max-w-5xl mx-auto mt-6 pb-8 px-2">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start pt-6 relative z-10">
-                {/* Step 1 */}
-                <div className="flex flex-col items-center text-center relative">
-                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
-                    <Calendar className="h-7 w-7 text-white" />
+            <div className="relative max-w-5xl mx-auto mt-8 md:mt-12 pb-8 px-2">
+              <div className="relative">
+                {/* Mobile View - Steps 1 & 2 in one row, Step 3 centered below */}
+                <div className="lg:hidden">
+                  {/* First Row - Steps 1 & 2 */}
+                  <div className="flex justify-center items-start gap-4 mb-4">
+                    {/* Step 1 */}
+                    <div className="flex flex-col items-center text-center relative group">
+                      <div className="bg-brand-orange rounded-2xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center mb-2 shadow-md group-hover:scale-110 transition-transform duration-200">
+                        <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold text-gray-900">Book Free Call</h3>
+                    </div>
+                    
+                    {/* Arrow 1 */}
+                    <div className="flex items-center justify-center h-12 sm:h-14 w-6 sm:w-8 pt-2">
+                      <svg className="w-6 h-6 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H17M17 12L12 7M17 12L12 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    
+                    {/* Step 2 */}
+                    <div className="flex flex-col items-center text-center relative group">
+                      <div className="bg-brand-orange rounded-2xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center mb-2 shadow-md group-hover:scale-110 transition-transform duration-200">
+                        <Car className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold text-gray-900">Get Strategy</h3>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-black mb-1">Book Your Free Call</h3>
-                </div>
-                {/* Step 2 */}
-                <div className="flex flex-col items-center text-center relative">
-                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
-                    <Car className="h-7 w-7 text-white" />
+                  
+                  {/* Second Row - Step 3 centered */}
+                  <div className="flex justify-center">
+                    {/* Arrow 2 - Vertical */}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-1/2 h-4 w-6 -mt-6">
+                      <svg className="w-6 h-6 text-brand-orange transform rotate-90" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H17M17 12L12 7M17 12L12 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    
+                    {/* Step 3 */}
+                    <div className="flex flex-col items-center text-center relative group mt-4">
+                      <div className="bg-brand-orange rounded-2xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center mb-2 shadow-md group-hover:scale-110 transition-transform duration-200">
+                        <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold text-gray-900">Get More Leads</h3>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-black mb-1">Get Custom Strategy</h3>
                 </div>
-                {/* Step 3 */}
-                <div className="flex flex-col items-center text-center relative">
-                  <div className="bg-brand-orange rounded-2xl w-16 h-16 flex items-center justify-center mb-3 shadow-md">
-                    <DollarSign className="h-7 w-7 text-white" />
+                
+                {/* Desktop View - Original 3-column layout */}
+                <div className="hidden lg:grid grid-cols-3 gap-8 items-start pt-6 relative z-10">
+                  {/* Step 1 */}
+                  <div className="flex flex-col items-center text-center relative group">
+                    <div className="bg-brand-orange rounded-2xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-200">
+                      <Calendar className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1">Book Your Free Call</h3>
                   </div>
-                  <h3 className="text-lg font-bold text-black mb-1">Watch Leads Flow In</h3>
+                  
+                  {/* Step 2 */}
+                  <div className="flex flex-col items-center text-center relative group">
+                    <div className="bg-brand-orange rounded-2xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-200">
+                      <Car className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1">Get Custom Strategy</h3>
+                  </div>
+                  
+                  {/* Step 3 */}
+                  <div className="flex flex-col items-center text-center relative group">
+                    <div className="bg-brand-orange rounded-2xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-200">
+                      <DollarSign className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1">Watch Leads Flow In</h3>
+                  </div>
                 </div>
-              </div>
-              {/* Arrows between steps - positioned absolutely between columns */}
-              <div className="hidden lg:block absolute inset-0 w-full h-full pointer-events-none">
-                {/* First arrow - between step 1 and 2 */}
-                <div className="absolute left-1/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
-                  <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                {/* Second arrow - between step 2 and 3 */}
-                <div className="absolute left-2/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
-                  <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                
+                {/* Arrows between steps - Desktop only */}
+                <div className="hidden lg:block absolute inset-0 w-full h-full pointer-events-none">
+                  {/* Arrow between step 1 and 2 */}
+                  <div className="absolute left-1/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                    <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  {/* Arrow between step 2 and 3 */}
+                  <div className="absolute left-2/3 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                    <svg className="w-16 h-16 text-brand-orange" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -430,11 +591,13 @@ export default function LandingPage() {
         </div>
       </HomeImprovementHero>
 
-      {/* Marketing Truth Section */}
-      <MarketingTruthSection />
+      {/* Marketing Truth Section - About Us */}
+      <section id="about">
+        <MarketingTruthSection />
+      </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20">
+      <section id="services" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="typography-h2">Services We Offer</h2>
@@ -487,7 +650,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-white">
+      <section id="testimonials" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="typography-h2">What Our Clients Say</h2>
@@ -508,13 +671,27 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <blockquote className="typography-body text-gray-600">
-                  "I used to rely on referrals — now I'm getting calls every day from people who found us online."
+                  "Our old website looked like it was built in 2005; no one was converting. The web wrench built us a sleek, modern site with AI-driven tools that actually engage visitors. We've seen a 70% increase in contact form submissions since the launch."
                 </blockquote>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3"></div>
+                <div className="flex items-center mt-4">
+                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3 overflow-hidden">
+                    <img 
+                      src="/images/testimonials/tom-r-rg-remodeling.webp" 
+                      alt="Tom R. - R&G Remodeling"
+                      className="w-full h-full object-cover"
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.style.background = 'rgba(30, 58, 138, 0.04)';
+                      }}
+                    />
+                  </div>
                   <div>
-                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">John M.</div>
-                    <div className="typography-caption text-gray-600">General Contractor</div>
+                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">Tom R.</div>
+                    <div className="typography-caption text-gray-600">Owner of R&G Remodeling</div>
                   </div>
                 </div>
               </CardContent>
@@ -528,13 +705,27 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <blockquote className="typography-body text-gray-600">
-                  "Our website looks amazing and actually converts visitors into clients."
+                  "We were running Facebook ads ourselves, but they weren't getting us quality leads. The web wrench took over our campaigns and used their AI automations to target homeowners ready to renovate. Our cost per lead dropped by half and our ROI is way up."
                 </blockquote>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3"></div>
+                <div className="flex items-center mt-4">
+                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3 overflow-hidden">
+                    <img 
+                      src="/images/testimonials/carlos-d-clearview-windows.webp" 
+                      alt="Carlos D. - Clearview Windows & Doors"
+                      className="w-full h-full object-cover"
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.style.background = 'rgba(30, 58, 138, 0.04)';
+                      }}
+                    />
+                  </div>
                   <div>
-                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">Sarah R.</div>
-                    <div className="typography-caption text-gray-600">Interior Designer</div>
+                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">Carlos D.</div>
+                    <div className="typography-caption text-gray-600">Founder of Clearview Windows & Doors</div>
                   </div>
                 </div>
               </CardContent>
@@ -548,13 +739,27 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <blockquote className="typography-body text-gray-600">
-                  "The Web Wrench doubled our leads in just 3 months. Best investment we've made."
+                  "I didn't know where to start with automation or AI. I just knew my time was being wasted on marketing that didn't work. The Web Wrench set everything up for us: smart ads, review tracking, even auto-responses for leads. Now I focus on the jobs, not the hustle."
                 </blockquote>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3"></div>
+                <div className="flex items-center mt-4">
+                  <div className="w-12 h-12 bg-brand-navy/10 rounded-full mr-3 overflow-hidden">
+                    <img 
+                      src="/images/testimonials/mike-l-apex-roofing.webp" 
+                      alt="Mike L. - Apex Roofing Solutions"
+                      className="w-full h-full object-cover"
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.style.background = 'rgba(30, 58, 138, 0.04)';
+                      }}
+                    />
+                  </div>
                   <div>
-                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">Mike T.</div>
-                    <div className="typography-caption text-gray-600">Roofing Contractor</div>
+                    <div className="typography-body-small font-semibold text-brand-charcoal mb-0">Mike L.</div>
+                    <div className="typography-caption text-gray-600">Owner of Apex Roofing Solutions</div>
                   </div>
                 </div>
               </CardContent>
@@ -620,7 +825,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-brand-charcoal text-white relative overflow-hidden">
+      <section id="final-cta" className="py-20 bg-brand-charcoal text-white relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="typography-h1 text-white mb-6">Ready to Start Getting More Leads? Let's Talk.</h2>
@@ -628,10 +833,15 @@ export default function LandingPage() {
               Book a free 30-minute strategy call and discover how we can help you dominate your local market.
             </p>
 
-            <Button size="lg" className="bg-brand-orange hover:bg-brand-orange-dark text-white text-lg px-12 py-4">
+            <a 
+              href="https://calendly.com/more-estimates/let-s-discuss-how-we-can-help-grow-your-business" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 shadow h-10 rounded-md bg-brand-orange hover:bg-brand-orange-dark text-white text-lg px-12 py-4"
+            >
               Book Your Free Strategy Call
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            </a>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 typography-body-small text-white/75">
               <div className="flex items-center">
@@ -791,6 +1001,17 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      
+      {/* Floating Action Button for Mobile/Tablet */}
+      <a 
+        href="https://calendly.com/more-estimates/let-s-discuss-how-we-can-help-grow-your-business"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 lg:hidden flex items-center justify-center w-16 h-16 rounded-full bg-brand-orange text-white shadow-lg hover:bg-brand-orange-dark transition-colors"
+        aria-label="Book a consultation"
+      >
+        <Calendar className="h-6 w-6" />
+      </a>
     </div>
   )
 } 

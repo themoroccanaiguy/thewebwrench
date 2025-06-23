@@ -357,7 +357,14 @@ const MarketingTruthSection: React.FC = () => {
             </div>
             
             <div className="cta-section">
-              <button className="cta-button">Get My Free Lead Strategy</button>
+              <a 
+                href="https://calendly.com/more-estimates/let-s-discuss-how-we-can-help-grow-your-business" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="cta-button"
+              >
+                Get My Free Lead Strategy
+              </a>
             </div>
           </div>
         </div>
