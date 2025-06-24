@@ -9,7 +9,7 @@ import { Badge } from "@/components/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/accordion"
 import { useState, useEffect } from "react"
 import { HomeImprovementHero } from "@/components/ui/home-improvement-hero"
-import { supabaseClient } from "@/lib/services"
+import { supabaseClient, submitToSupabase } from "@/lib/services"
 import { Spinner } from "@/components/ui/Spinner"
 
 function LeadMagnetSurvey() {
@@ -149,34 +149,41 @@ function LeadMagnetSurvey() {
       phone: answers.phone,
     };
 
-    const supabaseResult = await supabaseClient.from('leads').insert([formData]);
-    if (supabaseResult.error) {
+    try {
+      const { data, error } = await submitToSupabase(formData);
+      if (error) {
+        setSupabaseStatus('error');
+        setError('There was a problem submitting your information. Please try again.');
+      } else {
+        setSupabaseStatus('success');
+        setShowSuccessAnim(true)
+        setTimeout(() => {
+          setShowSuccessAnim(false)
+          setCurrentStep(questions.length + 1); // Show thank you
+          setAnswers({
+            businessType: "",
+            currentLeads: "",
+            biggestChallenge: "",
+            monthlyRevenue: "",
+            leadSources: [],
+            name: "",
+            email: "",
+            phone: "",
+          })
+          setTouched({})
+          setFieldErrors({})
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem('surveyDraft')
+          }
+        }, 1200)
+      }
+    } catch (err) {
       setSupabaseStatus('error');
       setError('There was a problem submitting your information. Please try again.');
-    } else {
-      setSupabaseStatus('success');
-      setShowSuccessAnim(true)
-      setTimeout(() => {
-        setShowSuccessAnim(false)
-        setCurrentStep(questions.length + 1); // Show thank you
-        setAnswers({
-          businessType: "",
-          currentLeads: "",
-          biggestChallenge: "",
-          monthlyRevenue: "",
-          leadSources: [],
-          name: "",
-          email: "",
-          phone: "",
-        })
-        setTouched({})
-        setFieldErrors({})
-        if (typeof window !== 'undefined') {
-          window.localStorage.removeItem('surveyDraft')
-        }
-      }, 1200)
+      console.error('Error submitting form:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const progress = ((currentStep + 1) / (questions.length + 2)) * 100
