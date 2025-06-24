@@ -10,16 +10,17 @@ const GA_MEASUREMENT_ID = 'G-19250J3074';
 // Type definitions for the global window object
 declare global {
   interface Window {
-    fbq: FBQ.FacebookPixel;
-    gtag: Gtag.Gtag;
+    fbq: any; // Using 'any' to avoid type conflicts with other type definitions
+    gtag: any; // Using 'any' to avoid type conflicts with other type definitions
     dataLayer: any[];
   }
   
+  // Keeping these namespaces for backward compatibility
   namespace FBQ {
-    interface FacebookPixel {
+    interface FacebookPixel extends Function {
       (command: 'init', id: string): void;
       (command: 'track', event: string, params?: Record<string, any>): void;
-      push(...args: any[]): void;
+      push?(...args: any[]): void;
       loaded?: boolean;
       version?: string;
       queue?: any[];
@@ -27,7 +28,7 @@ declare global {
   }
   
   namespace Gtag {
-    interface Gtag {
+    interface Gtag extends Function {
       (command: 'config', targetId: string, config?: Record<string, any>): void;
       (command: 'event', eventName: string, eventParams?: Record<string, any>): void;
       (command: 'set', targetId: string, config: string | boolean | Record<string, any>): void;
