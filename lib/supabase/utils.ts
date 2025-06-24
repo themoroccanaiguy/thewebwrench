@@ -1,5 +1,5 @@
 import { supabase } from './client';
-import type { Database } from './client';
+import type { Database } from './types';
 
 type TableName = keyof Database['public']['Tables'];
 
@@ -24,7 +24,7 @@ export async function updateData<T extends TableName>(
   table: T,
   updates: Database['public']['Tables'][T]['Update'],
   column: keyof Database['public']['Tables'][T]['Row'],
-  value: any
+  value: unknown
 ) {
   const { data, error } = await supabase
     .from(table)
@@ -43,7 +43,7 @@ export async function updateData<T extends TableName>(
 export async function deleteData<T extends TableName>(
   table: T,
   column: keyof Database['public']['Tables'][T]['Row'],
-  value: any
+  value: unknown
 ) {
   const { error } = await supabase
     .from(table)
