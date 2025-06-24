@@ -485,7 +485,12 @@ export default function LandingPage() {
                 size="lg"
                 className="bg-brand-orange hover:bg-brand-orange-dark text-white text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl transform-gpu"
                 onClick={() => {
-                  document.getElementById('lead-survey')?.scrollIntoView({ behavior: 'smooth' })
+                  if (typeof window !== 'undefined') {
+                    const element = document.getElementById('lead-survey');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
                 }}
               >
                 Get My Free Lead Strategy
